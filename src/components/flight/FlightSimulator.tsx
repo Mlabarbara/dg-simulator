@@ -50,23 +50,26 @@ const FlightSimulator = () => {
             let x = centerX;
             let y = height - margin;
 
+            // height calc
             y -= t * maxHeight * skillMod;
 
-            if (t < 0.4) {
-                const turnFactor = Math.sin(t * Math.PI / 0.8);
-                x += turn * 40 * turnFactor * (speed / 10) * throwMod;
-            } else if (t < 0.8) {
-                const stabilityT = (t - 0.4) / 0.4;
-                const previousTurn = turn * 40 * Math.sin(0.5 * Math.PI);
-                x += (previousTurn + (stabilityT * turn * 20)) * throwMod;
-            } else {
-                const fadeT = (t - 0.8) / 0.2;
-                const previousOffset = turn * 60;
-                const fadeAmount = fade * -80 * (1- Math.cos(fadeT * Math.PI / 2));
-                x += (previousOffset + fadeAmount) * throwMod;
-            }
+            //smooth and continuous turn and fade
+            const turnPhase = Math.sin(t * Math.PI) * Math.exp(-t * 2);
+            const fadePhase = (1 - Math.cos(t * Math.PI)) * Math.exp(t -1);
 
+            //combine turn and fade smoothly
+            const turnEffect = turn * 10 * turnPhase * (speed / 10);
+            const fadeEffect = fade * -20 * fadePhase;
+            x += (turnEffect + fadeEffect) * throwMod;
+
+            // add slight natural drift even with turn = 0
+            const naturalDrift  = Math.sin(t * Math.PI) * 2;
+            x+= naturalDrift * throwMod;
+
+            // departure angle influence
             x += departureAngle * 10 * Math.sin(t * Math.PI);
+
+            //
             x = Math.max(margin, Math.min(width - margin, x));
             y = Math.max(margin, Math.min(height - margin, y));
 
