@@ -62,7 +62,7 @@ const FlightSimulator = () => {
             } else {
                 const fadeT = (t - 0.8) / 0.2;
                 const previousOffset = turn * 60;
-                const fadeAmount = fade * -80 * Math.sin(fadeT * Math.PI / 2);
+                const fadeAmount = fade * -80 * (1- Math.cos(fadeT * Math.PI / 2));
                 x += (previousOffset + fadeAmount) * throwMod;
             }
 
