@@ -2,10 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-    output: 'export',
-    basePath: '/dg-simulator',
-    assetPrefix: '/dg-simulator/',
-    trailingSlash: true,
+    ...(process.env.NODE_ENV === 'production' ? {
+        output: 'export',
+        basePath: '',  // Remove /dg-simulator since you're deploying to root domain
+        trailingSlash: true,
+    } : {})
 };
 
 export default nextConfig;
