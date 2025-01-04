@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectTrigger, SelectItem, SelectValue } from '@/components/ui/select';
@@ -22,28 +22,37 @@ const FlightSimulator = () => {
 
     const getSkillMultiplier = () => {
         switch(skillLevel) {
-            case 'beginner': return 0.98;
-            case 'advanced': return 1.04;
-            default: return 1;
+            case 'beginner': return .99;
+            case 'advanced': return 1.06;
+            default: return 1.02;
         }
     };
 
     const getThrowModifier = () => {
-        switch(throwType) {
-            case 'rhfh': return -0.98;
-            case 'lhbh': return -1;
-            case 'lhfh': return 0.98;
-            default: return 1; // rhbh
-        }
+        const direction = {
+            'rhbh': 1,
+            'rhfh': -1,
+            'lhbh': -1,
+            'lhfh': 1
+        }[throwType] || 1;
+
+        const distance = {
+            'rhbh': 1.1,
+            'rhfh': 0.95,
+            'lhbh': 1.1,
+            'lhfh': 0.95
+        }[throwType] || 1;
+
+        return { direction, distance };
     };
 
     const generateFlightPath = () => {
         const points = [];
         const steps = 150;
         const skillMod = getSkillMultiplier();
-        const throwMod = getThrowModifier();
+        const { direction, distance } = getThrowModifier();
         const maxHeight = Math.min(height - 2 * margin,
-            (speed * 15 + glide * 20) * flightScale * skillMod);
+            (speed * 15 + glide * 20) * flightScale * skillMod * distance);
 
         for (let i = 0; i < steps; i++) {
             const t = i / steps;
@@ -52,21 +61,18 @@ const FlightSimulator = () => {
 
             y -= t * maxHeight * skillMod;
 
-            if (t < 0.4) {
-                const turnFactor = Math.sin(t * Math.PI / 0.8);
-                x += turn * 40 * turnFactor * (speed / 10) * throwMod;
-            } else if (t < 0.8) {
-                const stabilityT = (t - 0.4) / 0.4;
-                const previousTurn = turn * 40 * Math.sin(0.5 * Math.PI);
-                x += (previousTurn + (stabilityT * turn * 20)) * throwMod;
-            } else {
-                const fadeT = (t - 0.8) / 0.2;
-                const previousOffset = turn * 60;
-                const fadeAmount = fade * -80 * Math.sin(fadeT * Math.PI / 2);
-                x += (previousOffset + fadeAmount) * throwMod;
-            }
+            const turnPhase = Math.sin(t * Math.PI) * Math.exp(-t * 2);
+            const fadePhase = (2 - Math.cos(t * Math.PI)) * Math.exp((t - 2) * 2);
+
+            const turnEffect = turn * 10 * turnPhase * (speed / 10);
+            const fadeEffect = fade * -20 * fadePhase;
+            x += (turnEffect + fadeEffect) * direction;
+
+            const naturalDrift = Math.sin(t * Math.PI) * 2;
+            x += naturalDrift * direction;
 
             x += departureAngle * 10 * Math.sin(t * Math.PI);
+
             x = Math.max(margin, Math.min(width - margin, x));
             y = Math.max(margin, Math.min(height - margin, y));
 
@@ -114,9 +120,9 @@ const FlightSimulator = () => {
                             <Slider
                                 value={[departureAngle]}
                                 onValueChange={([value]) => setDepartureAngle(value)}
-                                min={-6}
-                                max={6}
-                                step={0.5}
+                                min={-9}
+                                max={9}
+                                step={0.25}
                                 className="w-full"
                             />
                         </div>
@@ -128,8 +134,8 @@ const FlightSimulator = () => {
                             <Slider
                                 value={[speed]}
                                 onValueChange={([value]) => setSpeed(value)}
-                                min={2}
-                                max={15}
+                                min={1}
+                                max={14}
                                 step={0.5}
                                 className="w-full"
                             />
@@ -143,7 +149,7 @@ const FlightSimulator = () => {
                                 value={[glide]}
                                 onValueChange={([value]) => setGlide(value)}
                                 min={0}
-                                max={6}
+                                max={8}
                                 step={0.5}
                                 className="w-full"
                             />
@@ -171,7 +177,7 @@ const FlightSimulator = () => {
                                 value={[fade]}
                                 onValueChange={([value]) => setFade(value)}
                                 min={-1}
-                                max={3}
+                                max={5}
                                 step={0.5}
                                 className="w-full"
                             />
@@ -186,19 +192,19 @@ const FlightSimulator = () => {
                             className="bg-white"
                         >
                             {/* Grid lines */}
-                            {Array.from({length: 8}).map((_, i) => (
+                            {Array.from({length: 9}).map((_, i) => (
                                 <React.Fragment key={`grid-${i}`}>
                                     <line
                                         x1={margin}
-                                        y1={margin + i * (height - 2 * margin) / 7}
+                                        y1={margin + i * (height - 2 * margin) / 8}
                                         x2={width - margin}
-                                        y2={margin + i * (height - 2 * margin) / 7}
+                                        y2={margin + i * (height - 2 * margin) / 8}
                                         stroke="#eee"
                                         strokeWidth="1"
                                     />
                                     <text
                                         x={10}
-                                        y={margin + i * (height - 2 * margin) / 7}
+                                        y={margin + i * (height - 2 * margin) / 8}
                                         fontSize="12"
                                         fill="#666"
                                     >
