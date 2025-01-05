@@ -101,11 +101,11 @@ const FlightSimulator = () => {
 
     return (
         <Card className="w-full max-w-2xl mx-auto">
-            <CardHeader>
-                <CardTitle>Disc Flight Path Simulator</CardTitle>
+            <CardHeader className="text-center">
+                <CardTitle className="text-blue-200">Disc Flight Path Simulator</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-1 mb-6">
                 <Select value={skillLevel} onValueChange={setSkillLevel}>
                     <SelectTrigger className="w-48">
                         <SelectValue placeholder="Skill Level" />
@@ -118,13 +118,13 @@ const FlightSimulator = () => {
                 </Select>
             </div>
 
-                <div className="grid grid-cols-2 sm:flex gap-2 mb-4">
+                <div className="grid grid-cols-2 sm:flex gap-2 mb-2">
                     {['rhbh', 'rhfh', 'lhbh', 'lhfh'].map(type => (
                         <button
                             key={type}
                             className={`px-4 py-2 rounded-md transition-colors ${
                                 throwType === type 
-                                ? 'bg-primary text-primary-foreground' 
+                                ? 'bg-blue-200 text-primary-foreground' 
                                 : 'bg-muted hover:bg-muted/80'
                             }`}
                             onClick={() => setThrowType(type)}
@@ -136,7 +136,7 @@ const FlightSimulator = () => {
                 <div className="space-y-6">
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium mb-2">
+                            <label className="block text-sm font-medium mb-4">
                                 Departure Angle ({departureAngle}°)
                             </label>
                             <Slider
@@ -242,7 +242,7 @@ const FlightSimulator = () => {
                             <path
                                 d={`M ${generateFlightPath().map(([x, y]) => `${x},${y}`).join(' L ')}`}
                                 fill="none"
-                                className="stroke-primary"
+                                className="stroke-blue-400"
                                 strokeWidth="2"
                             />
 
@@ -251,7 +251,7 @@ const FlightSimulator = () => {
                                 cx={centerX}
                                 cy={height - margin}
                                 r="4"
-                                className="fill-primary"
+                                className="fill-blue-400"
                             />
                         </svg>
                     </div>
