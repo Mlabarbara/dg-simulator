@@ -80,7 +80,8 @@ const FlightSimulator = () => {
             y -= t * maxHeight * skillMod;
 
             const turnPhase = Math.sin(t * Math.PI) * Math.exp(-t * 2);
-            const fadePhase = (2 - Math.cos(t * Math.PI)) * Math.exp((t - 2) * 2);
+            // Exponential growth curve that starts slow and intensifies at the end
+            const fadePhase = Math.exp(t * 3) / Math.exp(3);
 
             const turnEffect = turn * 10 * turnPhase * (speed / 10);
             const fadeEffect = fade * -20 * fadePhase;
