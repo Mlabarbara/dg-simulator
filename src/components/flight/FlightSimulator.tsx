@@ -14,8 +14,26 @@ const FlightSimulator = () => {
     const [throwType, setThrowType] = useState('rhbh');
     const [skillLevel, setSkillLevel] = useState('intermediate');
 
-    const width = 600;
-    const height = 400;
+    const [dimensions, setDimensions] = useState({ width: 600, height: 400 });
+
+    // Update dimensions on mount and window resize
+    React.useEffect(() => {
+        const updateDimensions = () => {
+            const container = document.querySelector('.flight-container');
+            if (container) {
+                const width = container.clientWidth;
+                const height = Math.min(400, window.innerHeight * 0.5);
+                setDimensions({ width, height });
+            }
+        };
+
+        updateDimensions();
+        window.addEventListener('resize', updateDimensions);
+        return () => window.removeEventListener('resize', updateDimensions);
+    }, []);
+
+    const width = dimensions.width;
+    const height = dimensions.height;
     const margin = 40;
     const flightScale = height / 400;
     const centerX = width / 2;
@@ -82,12 +100,12 @@ const FlightSimulator = () => {
     };
 
     return (
-        <Card className="w-full max-w-2xl">
+        <Card className="w-full max-w-2xl mx-auto">
             <CardHeader>
                 <CardTitle>Disc Flight Path Simulator</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="flex gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 mb-4">
                 <Select value={skillLevel} onValueChange={setSkillLevel}>
                     <SelectTrigger className="w-48">
                         <SelectValue placeholder="Skill Level" />
@@ -100,11 +118,15 @@ const FlightSimulator = () => {
                 </Select>
             </div>
 
-                <div className="flex gap-2 mb-4">
+                <div className="grid grid-cols-2 sm:flex gap-2 mb-4">
                     {['rhbh', 'rhfh', 'lhbh', 'lhfh'].map(type => (
                         <button
                             key={type}
-                            className={`px-4 py-2 rounded ${throwType === type ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                            className={`px-4 py-2 rounded-md transition-colors ${
+                                throwType === type 
+                                ? 'bg-primary text-primary-foreground' 
+                                : 'bg-muted hover:bg-muted/80'
+                            }`}
                             onClick={() => setThrowType(type)}
                         >
                             {type.toUpperCase()}
@@ -184,12 +206,13 @@ const FlightSimulator = () => {
                         </div>
                     </div>
 
-                    <div className="relative w-full h-96 border rounded bg-white">
+                    <div className="flight-container relative w-full border rounded bg-card">
                         <svg
                             width={width}
                             height={height}
                             viewBox={`0 0 ${width} ${height}`}
-                            className="bg-white"
+                            className="w-full h-full touch-none"
+                            style={{ touchAction: 'none' }}
                         >
                             {/* Grid lines */}
                             {Array.from({length: 9}).map((_, i) => (
@@ -199,14 +222,16 @@ const FlightSimulator = () => {
                                         y1={margin + i * (height - 2 * margin) / 8}
                                         x2={width - margin}
                                         y2={margin + i * (height - 2 * margin) / 8}
-                                        stroke="#eee"
+                                        className="text-muted-foreground/20"
+                                        stroke="currentColor"
                                         strokeWidth="1"
                                     />
                                     <text
                                         x={10}
                                         y={margin + i * (height - 2 * margin) / 8}
                                         fontSize="12"
-                                        fill="#666"
+                                        className="text-muted-foreground"
+                                        fill="currentColor"
                                     >
                                         {400 - i * 50}ft
                                     </text>
@@ -217,7 +242,7 @@ const FlightSimulator = () => {
                             <path
                                 d={`M ${generateFlightPath().map(([x, y]) => `${x},${y}`).join(' L ')}`}
                                 fill="none"
-                                stroke="blue"
+                                className="stroke-primary"
                                 strokeWidth="2"
                             />
 
@@ -226,7 +251,7 @@ const FlightSimulator = () => {
                                 cx={centerX}
                                 cy={height - margin}
                                 r="4"
-                                fill="blue"
+                                className="fill-primary"
                             />
                         </svg>
                     </div>
